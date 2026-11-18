@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>타이머 · SL Startup Lab</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #f4f4f2;
+      --surface: #fcfcfb;
+      --text: #0b0b0b;
+      --text-2: #52514e;
+      --muted: #8a8984;
+      --border: #e4e4e0;
+      --track: #ecebe7;
+      --accent: #2a78d6;
+      --accent-text: #ffffff;
+      --done: #eb6834;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root:where(:not([data-theme="light"])) {
+        color-scheme: dark;
+        --bg: #121211;
+        --surface: #1a1a19;
+        --text: #f0efec;
+        --text-2: #c3c2b7;
+        --muted: #8f8e88;
+        --border: #2c2c2a;
+        --track: #272725;
+        --accent: #3987e5;
+        --accent-text: #ffffff;
+        --done: #d95926;
+      }
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: -apple-system, "Segoe UI", "Noto Sans KR", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 24px 16px 48px;
+    }
+    .back {
+      align-self: flex-start;
+      max-width: 520px; width: 100%; margin: 0 auto 16px;
+      color: var(--text-2); text-decoration: none; font-size: 0.9rem;
+    }
+    .back:hover { color: var(--accent); }
+    .app {
+      width: 100%; max-width: 520px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 28px 24px;
+      text-align: center;
+    }
+    h1 { margin: 0 0 20px; font-size: 1.4rem; }
+
+    /* 원형 진행 표시 */
+    .ring { position: relative; width: min(280px, 100%); aspect-ratio: 1; margin: 0 auto 24px; }
+    .ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+    .ring circle { fill: none; stroke-width: 10; }
+    .ring .track { stroke: var(--track); }
+    .ring .progress {
+      stroke: var(--accent); stroke-linecap: round;
+      transition: stroke-dashoffset 0.25s linear, stroke 0.2s;
+    }
+    .app.finished .ring .progress { stroke: var(--done); }
+    .display {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .time {
+      font-size: clamp(2.4rem, 11vw, 3.4rem); font-weight: 700;
+      font-variant-numeric: tabular-nums; letter-spacing: 0.02em;
+    }
+    .state { color: var(--text-2); font-size: 0.95rem; margin-top: 4px; }
+    .app.finished .time { color: var(--done); animation: blink 1s steps(2, start) infinite; }
+    @keyframes blink { to { visibility: hidden; } }
+
+    /* 시간 입력 */
+    .inputs { display: flex; justify-content: center; align-items: flex-end; gap: 8px; margin-bottom: 16px; }
+    .inputs label { display: flex; flex-direction: column; gap: 4px; font-size: 0.8rem; color: var(--text-2); }
+    .inputs input {
+      width: 76px; padding: 10px 6px; text-align: center;
+      font-size: 1.4rem; font-variant-numeric: tabular-nums;
+      color: var(--text); background: var(--bg);
+      border: 1px solid var(--border); border-radius: 10px;
+    }
+    .inputs input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+    .inputs input:disabled { opacity: 0.5; }
+    .colon { font-size: 1.4rem; padding-bottom: 10px; color: var(--muted); }
+
+    /* 빠른 설정 */
+    .presets { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-bottom: 20px; }
+    .presets button {
+      padding: 6px 14px; font-size: 0.88rem;
+      background: transparent; color: var(--text-2);
+      border: 1px solid var(--border); border-radius: 999px; cursor: pointer;
+    }
+    .presets button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+    .presets button:disabled { opacity: 0.4; cursor: default; }
+
+    /* 조작 버튼 */
+    .controls { display: flex; justify-content: center; gap: 12px; }
+    .controls button {
+      min-width: 120px; padding: 12px 20px; font-size: 1rem; font-weight: 600;
+      border-radius: 12px; cursor: pointer; border: 1px solid var(--border);
+      background: transparent; color: var(--text);
+    }
+    .controls .primary { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+    .controls button:hover { filter: brightness(1.08); }
+    .controls button:disabled { opacity: 0.4; cursor: default; filter: none; }
+    .hint { margin: 18px 0 0; color: var(--muted); font-size: 0.8rem; }
+    .sound { display: inline-flex; gap: 6px; align-items: center; margin-top: 12px; color: var(--text-2); font-size: 0.88rem; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <a class="back" href="../">← 대시보드로 돌아가기</a>
+
+  <main class="app" id="app">
+    <h1>⏱ 타이머</h1>
+
+    <div class="ring">
+      <svg viewBox="0 0 120 120" aria-hidden="true">
+        <circle class="track" cx="60" cy="60" r="52"></circle>
+        <circle class="progress" id="progress" cx="60" cy="60" r="52"></circle>
+      </svg>
+      <div class="display">
+        <div class="time" id="time" role="timer" aria-live="off">05:00</div>
+        <div class="state" id="state">시간을 설정하세요</div>
+      </div>
+    </div>
+
+    <div class="inputs">
+      <label>시<input id="h" type="number" min="0" max="23" value="0" inputmode="numeric"></label>
+      <span class="colon">:</span>
+      <label>분<input id="m" type="number" min="0" max="59" value="5" inputmode="numeric"></label>
+      <span class="colon">:</span>
+      <label>초<input id="s" type="number" min="0" max="59" value="0" inputmode="numeric"></label>
+    </div>
+
+    <div class="presets" id="presets">
+      <button data-sec="60">1분</button>
+      <button data-sec="180">3분</button>
+      <button data-sec="300">5분</button>
+      <button data-sec="600">10분</button>
+      <button data-sec="1500">25분 (뽀모도로)</button>
+    </div>
+
+    <div class="controls">
+      <button class="primary" id="startBtn">시작</button>
+      <button id="resetBtn">초기화</button>
+    </div>
+
+    <label class="sound"><input type="checkbox" id="soundOn" checked> 종료 알림음</label>
+    <p class="hint">단축키: Space 시작/일시정지 · R 초기화</p>
+  </main>
+
+<script>
+const $ = id => document.getElementById(id);
+const app = $('app'), timeEl = $('time'), stateEl = $('state');
+const hIn = $('h'), mIn = $('m'), sIn = $('s');
+const startBtn = $('startBtn'), resetBtn = $('resetBtn');
+const progress = $('progress');
+const CIRC = 2 * Math.PI * 52;
+progress.style.strokeDasharray = CIRC;
+
+let total = 0;        // 설정한 전체 시간(ms)
+let remaining = 0;    // 남은 시간(ms)
+let endAt = 0;        // 끝나는 시각 (타이머 실행 중일 때)
+let timerId = null;
+let status = 'idle';  // idle | running | paused | finished
+let beepId = null;
+
+const pad = n => String(n).padStart(2, '0');
+function format(ms) {
+  const t = Math.ceil(ms / 1000);
+  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), s = t % 60;
+  return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
+}
+function clampInput(el, max) {
+  let v = parseInt(el.value, 10);
+  if (isNaN(v) || v < 0) v = 0;
+  if (v > max) v = max;
+  el.value = v;
+  return v;
+}
+function readInputs() {
+  return (clampInput(hIn, 23) * 3600 + clampInput(mIn, 59) * 60 + clampInput(sIn, 59)) * 1000;
+}
+function setInputs(sec) {
+  hIn.value = Math.floor(sec / 3600);
+  mIn.value = Math.floor((sec % 3600) / 60);
+  sIn.value = sec % 60;
+}
+
+function render() {
+  timeEl.textContent = format(remaining);
+  const ratio = total > 0 ? remaining / total : 1;
+  progress.style.strokeDashoffset = CIRC * (1 - ratio);
+  stateEl.textContent = {
+    idle: total > 0 ? '준비' : '시간을 설정하세요',
+    running: '진행 중',
+    paused: '일시정지',
+    finished: '시간 종료!',
+  }[status];
+  startBtn.textContent = status === 'running' ? '일시정지' : status === 'paused' ? '계속' : '시작';
+  startBtn.disabled = status === 'idle' && total === 0;
+  const locked = status === 'running' || status === 'paused';
+  [hIn, mIn, sIn].forEach(i => i.disabled = locked);
+  document.querySelectorAll('#presets button').forEach(b => b.disabled = locked);
+  app.classList.toggle('finished', status === 'finished');
+  document.title = status === 'running' || status === 'paused'
+    ? `${format(remaining)} · 타이머` : status === 'finished' ? '⏰ 시간 종료!' : '타이머 · SL Startup Lab';
+}
+
+function loadFromInputs() {
+  stopBeep();
+  total = remaining = readInputs();
+  status = 'idle';
+  render();
+}
+
+function tick() {
+  remaining = Math.max(0, endAt - Date.now());
+  if (remaining === 0) finish();
+  render();
+}
+
+function start() {
+  if (status === 'finished') loadFromInputs();
+  if (total === 0) return;
+  ensureAudio();
+  endAt = Date.now() + remaining;
+  status = 'running';
+  clearInterval(timerId);
+  timerId = setInterval(tick, 200);
+  render();
+}
+function pause() {
+  clearInterval(timerId);
+  remaining = Math.max(0, endAt - Date.now());
+  status = 'paused';
+  render();
+}
+function reset() {
+  clearInterval(timerId);
+  loadFromInputs();
+}
+function finish() {
+  clearInterval(timerId);
+  status = 'finished';
+  remaining = 0;
+  if ($('soundOn').checked) startBeep();
+}
+
+/* 알림음 (Web Audio, 외부 파일 없음) */
+let audioCtx = null;
+function ensureAudio() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  } catch (e) { audioCtx = null; }
+}
+function beep() {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  [0, 0.18, 0.36].forEach(d => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.frequency.value = 880;
+    g.gain.setValueAtTime(0.0001, t + d);
+    g.gain.exponentialRampToValueAtTime(0.3, t + d + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + d + 0.14);
+    o.connect(g).connect(audioCtx.destination);
+    o.start(t + d); o.stop(t + d + 0.15);
+  });
+}
+function startBeep() {
+  beep();
+  let count = 1;
+  beepId = setInterval(() => { beep(); if (++count >= 5) stopBeep(); }, 1000);
+}
+function stopBeep() { clearInterval(beepId); beepId = null; }
+
+/* 이벤트 */
+startBtn.addEventListener('click', () => status === 'running' ? pause() : start());
+resetBtn.addEventListener('click', reset);
+[hIn, mIn, sIn].forEach(i => i.addEventListener('change', loadFromInputs));
+$('presets').addEventListener('click', e => {
+  const sec = e.target.dataset.sec;
+  if (!sec) return;
+  setInputs(+sec);
+  loadFromInputs();
+});
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' && e.target.type === 'number') return;
+  if (e.code === 'Space') { e.preventDefault(); status === 'running' ? pause() : start(); }
+  if (e.key === 'r' || e.key === 'R') reset();
+});
+
+loadFromInputs();
+</script>
+</body>
+</html>
