@@ -96,18 +96,11 @@
     }
     @media (max-width: 760px) { .charts { grid-template-columns: minmax(0, 1fr); } }
     .chart-box { position: relative; }
-    .chart-box svg { display: block; width: 100%; height: auto; overflow: visible; }
-    #pie { max-width: 220px; margin: 0 auto; }
+    #pie-box { max-width: 220px; margin: 0 auto; }
+    #line-box { height: 260px; }
     .legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 12px; font-size: 0.88rem; color: var(--text-2); }
     .legend span { display: inline-flex; align-items: center; gap: 6px; }
     .legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
-    .tip {
-      position: absolute; pointer-events: none; opacity: 0;
-      background: var(--text); color: var(--surface);
-      font-size: 0.82rem; padding: 6px 10px; border-radius: 8px;
-      white-space: nowrap; transform: translate(-50%, calc(-100% - 10px));
-      transition: opacity 0.1s;
-    }
     details { margin-top: 10px; font-size: 0.85rem; color: var(--text-2); }
     details table { border-collapse: collapse; margin-top: 6px; width: 100%; }
     details td, details th { text-align: left; padding: 3px 8px 3px 0; border-bottom: 1px solid var(--grid); }
@@ -186,8 +179,7 @@
       <h2>학습 분야 비율 <span class="demo">데모</span></h2>
       <p class="sub" id="pie-sub"></p>
       <div class="chart-box" id="pie-box">
-        <svg id="pie" viewBox="0 0 240 240" role="img" aria-label="학습 분야 비율 파이 차트"></svg>
-        <div class="tip" id="pie-tip"></div>
+        <canvas id="pie" role="img" aria-label="학습 분야 비율 파이 차트"></canvas>
       </div>
       <div class="legend" id="pie-legend"></div>
       <details><summary>표로 보기</summary><table id="pie-table"></table></details>
@@ -197,8 +189,7 @@
       <h2>최근 7일 학습 시간 <span class="demo">데모</span></h2>
       <p class="sub" id="line-sub"></p>
       <div class="chart-box" id="line-box">
-        <svg id="line" viewBox="0 0 560 260" role="img" aria-label="최근 7일 학습 시간 꺾은선 그래프"></svg>
-        <div class="tip" id="line-tip"></div>
+        <canvas id="line" role="img" aria-label="최근 7일 학습 시간 꺾은선 그래프"></canvas>
       </div>
       <details><summary>표로 보기</summary><table id="line-table"></table></details>
     </div>
@@ -279,6 +270,7 @@
   <footer>© SL Startup Lab</footer>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 <script>
 /* =====================================================================
    대시보드 데이터 — 지금은 데모 값입니다.
@@ -348,132 +340,167 @@ document.getElementById('stats').innerHTML = DASHBOARD.stats.map(s => `
     <div class="note">${s.note}${s.change ? ` <span class="up">▲ ${s.change}</span>` : ''}</div>
   </div>`).join('');
 
-/* ---------- 공통 ---------- */
-const NS = 'http://www.w3.org/2000/svg';
-const el = (tag, attrs) => {
-  const e = document.createElementNS(NS, tag);
-  for (const k in attrs) e.setAttribute(k, attrs[k]);
-  return e;
+/* ---------- 차트 (Chart.js) ---------- */
+const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+const SERIES = () => [css('--s1'), css('--s2'), css('--s3')];
+let pieChart, lineChart;
+
+// 도넛 가운데에 총합 표시
+const centerText = {
+  id: 'centerText',
+  afterDraw(chart) {
+    if (chart.config.type !== 'doughnut') return;
+    const { ctx, chartArea: a } = chart;
+    const total = chart.data.datasets[0].data.reduce((s, v) => s + v, 0);
+    const x = (a.left + a.right) / 2, y = (a.top + a.bottom) / 2;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = css('--text');
+    ctx.font = '700 28px -apple-system, "Segoe UI", "Noto Sans KR", sans-serif';
+    ctx.fillText(total, x, y + 4);
+    ctx.fillStyle = css('--text-2');
+    ctx.font = '13px -apple-system, "Segoe UI", "Noto Sans KR", sans-serif';
+    ctx.fillText('총 시간', x, y + 24);
+    ctx.restore();
+  },
 };
-const SERIES = ['var(--s1)', 'var(--s2)', 'var(--s3)'];
-function showTip(tip, box, x, y, html) {
-  const r = box.getBoundingClientRect();
-  tip.innerHTML = html;
-  tip.style.left = Math.min(Math.max(x - r.left, 70), r.width - 70) + 'px';
-  tip.style.top = (y - r.top) + 'px';
-  tip.style.opacity = 1;
+
+// 꺾은선 최고값에만 라벨 표시
+const peakLabel = {
+  id: 'peakLabel',
+  afterDatasetsDraw(chart) {
+    if (chart.config.type !== 'line') return;
+    const values = chart.data.datasets[0].data;
+    const i = values.indexOf(Math.max(...values));
+    const pt = chart.getDatasetMeta(0).data[i];
+    if (!pt) return;
+    const { ctx } = chart;
+    ctx.save();
+    ctx.textAlign = 'center';
+    ctx.fillStyle = css('--text');
+    ctx.font = '600 12px -apple-system, "Segoe UI", "Noto Sans KR", sans-serif';
+    ctx.fillText(values[i] + DASHBOARD.line.unit, pt.x, pt.y - 12);
+    ctx.restore();
+  },
+};
+
+function tooltipStyle() {
+  return {
+    backgroundColor: css('--text'),
+    titleColor: css('--surface'),
+    bodyColor: css('--surface'),
+    padding: 10,
+    cornerRadius: 8,
+    displayColors: false,
+  };
 }
 
-/* ---------- 파이(도넛) 차트 ---------- */
-(function drawPie() {
-  const { data, subtitle } = DASHBOARD.pie;
-  const svg = document.getElementById('pie');
-  const box = document.getElementById('pie-box');
-  const tip = document.getElementById('pie-tip');
-  const total = data.reduce((a, d) => a + d.value, 0);
-  const cx = 120, cy = 120, R = 108, r = 64;
-  document.getElementById('pie-sub').textContent = subtitle;
+function drawCharts() {
+  Chart.defaults.font.family = '-apple-system, "Segoe UI", "Noto Sans KR", sans-serif';
+  Chart.defaults.color = css('--text-2');
 
-  let a0 = -Math.PI / 2;
-  data.forEach((d, i) => {
-    const a1 = a0 + (d.value / total) * Math.PI * 2;
-    const large = a1 - a0 > Math.PI ? 1 : 0;
-    const pt = (rad, a) => `${cx + rad * Math.cos(a)} ${cy + rad * Math.sin(a)}`;
-    const path = el('path', {
-      d: `M ${pt(R, a0)} A ${R} ${R} 0 ${large} 1 ${pt(R, a1)} L ${pt(r, a1)} A ${r} ${r} 0 ${large} 0 ${pt(r, a0)} Z`,
-      fill: SERIES[i], stroke: 'var(--surface)', 'stroke-width': 2,
-    });
-    const pct = Math.round((d.value / total) * 100);
-    path.style.cursor = 'pointer';
-    path.addEventListener('mousemove', e =>
-      showTip(tip, box, e.clientX, e.clientY, `<b>${d.name}</b> ${d.value}시간 (${pct}%)`));
-    path.addEventListener('mouseleave', () => { tip.style.opacity = 0; path.style.opacity = 1; });
-    path.addEventListener('mouseenter', () => { path.style.opacity = 0.85; });
-    svg.appendChild(path);
-    a0 = a1;
+  /* 도넛(파이) 차트 */
+  const pie = DASHBOARD.pie;
+  const total = pie.data.reduce((a, d) => a + d.value, 0);
+  document.getElementById('pie-sub').textContent = pie.subtitle;
+  if (pieChart) pieChart.destroy();
+  pieChart = new Chart(document.getElementById('pie'), {
+    type: 'doughnut',
+    data: {
+      labels: pie.data.map(d => d.name),
+      datasets: [{
+        data: pie.data.map(d => d.value),
+        backgroundColor: SERIES(),
+        borderColor: css('--surface'),
+        borderWidth: 2,
+        hoverOffset: 6,
+      }],
+    },
+    options: {
+      cutout: '58%',
+      maintainAspectRatio: true,
+      aspectRatio: 1,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...tooltipStyle(),
+          callbacks: {
+            label: c => `${c.label} ${c.parsed}시간 (${Math.round(c.parsed / total * 100)}%)`,
+          },
+        },
+      },
+    },
+    plugins: [centerText],
   });
-  const t1 = el('text', { x: cx, y: cy - 2, 'text-anchor': 'middle', fill: 'var(--text)', 'font-size': 28, 'font-weight': 700 });
-  t1.textContent = total;
-  const t2 = el('text', { x: cx, y: cy + 20, 'text-anchor': 'middle', fill: 'var(--text-2)', 'font-size': 13 });
-  t2.textContent = '총 시간';
-  svg.append(t1, t2);
-
-  document.getElementById('pie-legend').innerHTML = data.map((d, i) =>
-    `<span><i style="background:${SERIES[i]}"></i>${d.name} ${Math.round(d.value / total * 100)}%</span>`).join('');
+  document.getElementById('pie-legend').innerHTML = pie.data.map((d, i) =>
+    `<span><i style="background:${SERIES()[i]}"></i>${d.name} ${Math.round(d.value / total * 100)}%</span>`).join('');
   document.getElementById('pie-table').innerHTML =
     '<tr><th>분야</th><th>시간</th></tr>' +
-    data.map(d => `<tr><td>${d.name}</td><td>${d.value}</td></tr>`).join('');
-})();
+    pie.data.map(d => `<tr><td>${d.name}</td><td>${d.value}</td></tr>`).join('');
 
-/* ---------- 꺾은선 그래프 ---------- */
-(function drawLine() {
-  const { data, subtitle, unit } = DASHBOARD.line;
-  const svg = document.getElementById('line');
-  const box = document.getElementById('line-box');
-  const tip = document.getElementById('line-tip');
-  document.getElementById('line-sub').textContent = subtitle;
-
-  const W = 560, H = 260, L = 36, Rt = 16, T = 16, B = 30;
-  const max = Math.ceil(Math.max(...data.map(d => d.value)));
-  const x = i => L + (i * (W - L - Rt)) / (data.length - 1);
-  const y = v => T + (1 - v / max) * (H - T - B);
-
-  for (let v = 0; v <= max; v++) {
-    svg.appendChild(el('line', { x1: L, x2: W - Rt, y1: y(v), y2: y(v), stroke: 'var(--grid)', 'stroke-width': 1 }));
-    const lbl = el('text', { x: L - 8, y: y(v) + 4, 'text-anchor': 'end', fill: 'var(--muted)', 'font-size': 12 });
-    lbl.textContent = v;
-    svg.appendChild(lbl);
-  }
-  data.forEach((d, i) => {
-    const lbl = el('text', { x: x(i), y: H - 8, 'text-anchor': 'middle', fill: 'var(--text-2)', 'font-size': 12 });
-    lbl.textContent = d.day;
-    svg.appendChild(lbl);
+  /* 꺾은선 그래프 */
+  const line = DASHBOARD.line;
+  const s1 = css('--s1');
+  document.getElementById('line-sub').textContent = line.subtitle;
+  if (lineChart) lineChart.destroy();
+  lineChart = new Chart(document.getElementById('line'), {
+    type: 'line',
+    data: {
+      labels: line.data.map(d => d.day),
+      datasets: [{
+        data: line.data.map(d => d.value),
+        borderColor: s1,
+        backgroundColor: s1 + '1f',
+        fill: true,
+        borderWidth: 2,
+        tension: 0,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointBackgroundColor: s1,
+        pointBorderColor: css('--surface'),
+        pointBorderWidth: 2,
+      }],
+    },
+    options: {
+      maintainAspectRatio: false,
+      layout: { padding: { top: 20 } },
+      interaction: { mode: 'index', intersect: false },
+      scales: {
+        x: { grid: { display: false }, border: { display: false } },
+        y: {
+          beginAtZero: true,
+          ticks: { stepSize: 1, color: css('--muted') },
+          grid: { color: css('--grid') },
+          border: { display: false },
+        },
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          ...tooltipStyle(),
+          callbacks: {
+            title: items => `${items[0].label}요일`,
+            label: c => `${c.parsed.y}${line.unit}`,
+          },
+        },
+      },
+    },
+    plugins: [peakLabel],
   });
-
-  const pts = data.map((d, i) => `${x(i)},${y(d.value)}`).join(' ');
-  svg.appendChild(el('polygon', {
-    points: `${x(0)},${y(0)} ${pts} ${x(data.length - 1)},${y(0)}`,
-    fill: 'var(--s1)', opacity: 0.1,
-  }));
-  svg.appendChild(el('polyline', {
-    points: pts, fill: 'none', stroke: 'var(--s1)', 'stroke-width': 2,
-    'stroke-linejoin': 'round', 'stroke-linecap': 'round',
-  }));
-
-  // 최고값에만 직접 라벨
-  const top = data.reduce((m, d, i) => (d.value > data[m].value ? i : m), 0);
-  const peak = el('text', { x: x(top), y: y(data[top].value) - 12, 'text-anchor': 'middle', fill: 'var(--text)', 'font-size': 12, 'font-weight': 600 });
-  peak.textContent = `${data[top].value}${unit}`;
-  svg.appendChild(peak);
-
-  const cross = el('line', { y1: T, y2: H - B, stroke: 'var(--muted)', 'stroke-width': 1, 'stroke-dasharray': '3 3', opacity: 0 });
-  const dot = el('circle', { r: 5, fill: 'var(--s1)', stroke: 'var(--surface)', 'stroke-width': 2, opacity: 0 });
-  svg.append(cross, dot);
-  data.forEach((d, i) => {
-    svg.appendChild(el('circle', { cx: x(i), cy: y(d.value), r: 4, fill: 'var(--s1)', stroke: 'var(--surface)', 'stroke-width': 2 }));
-  });
-
-  // 마우스 위치에서 가장 가까운 날짜를 찾아 툴팁 표시
-  const hit = el('rect', { x: L, y: T, width: W - L - Rt, height: H - T - B, fill: 'transparent' });
-  hit.addEventListener('mousemove', e => {
-    const r = svg.getBoundingClientRect();
-    const sx = ((e.clientX - r.left) / r.width) * W;
-    const i = Math.max(0, Math.min(data.length - 1, Math.round((sx - L) / ((W - L - Rt) / (data.length - 1)))));
-    cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i)); cross.setAttribute('opacity', 1);
-    dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(data[i].value)); dot.setAttribute('opacity', 1);
-    const px = r.left + (x(i) / W) * r.width;
-    const py = r.top + (y(data[i].value) / H) * r.height;
-    showTip(tip, box, px, py, `<b>${data[i].day}요일</b> ${data[i].value}${unit}`);
-  });
-  hit.addEventListener('mouseleave', () => {
-    cross.setAttribute('opacity', 0); dot.setAttribute('opacity', 0); tip.style.opacity = 0;
-  });
-  svg.appendChild(hit);
-
   document.getElementById('line-table').innerHTML =
-    `<tr><th>요일</th><th>${unit}</th></tr>` +
-    data.map(d => `<tr><td>${d.day}</td><td>${d.value}</td></tr>`).join('');
-})();
+    `<tr><th>요일</th><th>${line.unit}</th></tr>` +
+    line.data.map(d => `<tr><td>${d.day}</td><td>${d.value}</td></tr>`).join('');
+}
+
+if (window.Chart) {
+  drawCharts();
+  // 라이트/다크 모드가 바뀌면 색을 다시 적용
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', drawCharts);
+} else {
+  ['pie-box', 'line-box'].forEach(id => {
+    document.getElementById(id).innerHTML = '<p class="sub">차트를 불러오지 못했습니다.</p>';
+  });
+}
 
 /* ---------- 오늘의 목표 & 한마디 ---------- */
 (function drawGoals() {
