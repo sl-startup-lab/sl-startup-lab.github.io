@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AiShot — AI 숏폼 대행 에이전시</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --black:#0A0A0F;--black2:#111118;--black3:#1A1A28;
+  --purple:#9B5CFF;--purple2:#C13AFF;--neon:#00FFD1;
+  --white:#fff;--gray:#8A8A9A;--gray2:#3A3A4A;--border:rgba(255,255,255,0.08);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Noto Sans KR',sans-serif;background:var(--black);color:var(--white);overflow-x:hidden;}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;padding:0 48px;height:64px;background:rgba(10,10,15,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;}
+.nav-logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;}
+.nav-logo-icon svg{width:20px;height:20px;}
+.nav-wordmark{font-size:1.45rem;font-weight:900;letter-spacing:1px;line-height:1;}
+.nav-wordmark .ai{color:var(--purple);}
+.nav-wordmark .shot{color:var(--white);}
+.nav-links{display:flex;gap:28px;margin-left:auto;align-items:center;}
+.nav-links a{color:var(--gray);font-size:.84rem;text-decoration:none;font-weight:500;transition:color .18s;}
+.nav-links a:hover{color:var(--white);}
+.nav-cta{background:var(--purple)!important;color:var(--white)!important;padding:9px 22px;border-radius:6px;font-weight:700!important;}
+.nav-cta:hover{background:var(--purple2)!important;}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:100px 24px 60px;position:relative;overflow:hidden;text-align:center;}
+.hero-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(155,92,255,0.05) 1px,transparent 1px),linear-gradient(90deg,rgba(155,92,255,0.05) 1px,transparent 1px);background-size:64px 64px;animation:gridDrift 24s linear infinite;}
+@keyframes gridDrift{from{transform:translateY(0);}to{transform:translateY(64px);}}
+.hero-glow{position:absolute;top:15%;left:50%;transform:translateX(-50%);width:700px;height:500px;background:radial-gradient(ellipse,rgba(155,92,255,0.15) 0%,transparent 68%);pointer-events:none;}
+.hero-content{position:relative;z-index:1;max-width:900px;}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:rgba(155,92,255,0.12);border:1px solid rgba(155,92,255,0.35);color:var(--purple);font-size:.72rem;font-weight:700;letter-spacing:3px;text-transform:uppercase;padding:6px 18px;border-radius:20px;margin-bottom:32px;}
+.hero-eyebrow::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--neon);animation:blink 1.3s infinite;}
+@keyframes blink{0%,100%{opacity:1;}50%{opacity:.2;}}
+.hero-h1{font-size:clamp(2rem,4.5vw,4.2rem);font-weight:900;line-height:1.15;letter-spacing:-1px;margin-bottom:16px;}
+.hero-h1 .line1{color:var(--white);}
+.hero-h1 .line2{color:var(--purple);}
+.hero-h1 .line3{background:linear-gradient(90deg,var(--neon),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.tw-wrap{font-size:clamp(1.1rem,2.5vw,1.6rem);font-weight:700;color:var(--gray);margin-bottom:28px;min-height:2rem;display:flex;align-items:center;justify-content:center;gap:8px;}
+.tw-prefix{color:rgba(255,255,255,.7);}
+#tw-text{color:var(--neon);}
+.tw-cur{display:inline-block;width:2px;height:1.1em;background:var(--neon);animation:cb .7s step-end infinite;vertical-align:middle;}
+@keyframes cb{0%,100%{opacity:1;}50%{opacity:0;}}
+.hero-desc{color:var(--gray);font-size:.97rem;line-height:1.95;max-width:480px;margin:0 auto 40px;}
+.hero-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-primary{padding:15px 36px;background:var(--purple);color:var(--white);border:none;border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:.95rem;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-flex;align-items:center;gap:8px;}
+.btn-primary:hover{background:var(--purple2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(155,92,255,.4);}
+.btn-outline{padding:15px 36px;background:transparent;color:var(--white);border:1.5px solid var(--border);border-radius:8px;font-family:'Noto Sans KR',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;text-decoration:none;transition:all .2s;}
+.btn-outline:hover{border-color:var(--purple);color:var(--purple);}
+.hero-stats{display:flex;gap:0;margin-top:64px;border:1px solid var(--border);border-radius:14px;overflow:hidden;background:rgba(255,255,255,.02);}
+.hs{flex:1;padding:22px 20px;text-align:center;border-right:1px solid var(--border);}
+.hs:last-child{border-right:none;}
+.hs-num{font-size:2rem;font-weight:900;color:var(--purple);}
+.hs-label{font-size:.7rem;color:var(--gray);margin-top:4px;letter-spacing:.5px;}
+
+/* SECTIONS */
+.sec{padding:96px 24px;}
+.sec-inner{max-width:1060px;margin:0 auto;}
+.sec-eye{font-size:.68rem;font-weight:700;letter-spacing:4px;color:var(--purple);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;justify-content:center;gap:10px;text-align:center;}
+.sec-eye::before{content:'';width:28px;height:1.5px;background:var(--purple);}
+.sec-h2{font-size:clamp(2rem,4.5vw,3.2rem);font-weight:900;line-height:1.1;margin-bottom:14px;text-align:center;}
+.sec-desc{color:var(--gray);font-size:.95rem;line-height:1.95;max-width:520px;margin-bottom:52px;text-align:center;margin-left:auto;margin-right:auto;}
+
+/* PAIN - WHY SECTION */
+.pain-sec{background:var(--black2);}
+.pain-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px;}
+.pain-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:14px;padding:28px 22px;border-top:2px solid var(--purple);}
+.pain-emoji{font-size:1.8rem;margin-bottom:14px;}
+.pain-card h3{font-size:.97rem;font-weight:700;margin-bottom:8px;}
+.pain-card p{font-size:.82rem;color:var(--gray);line-height:1.8;}
+.pain-vs{text-align:center;padding:36px;background:linear-gradient(135deg,rgba(155,92,255,.12),rgba(193,58,255,.08));border:1px solid rgba(155,92,255,.2);border-radius:16px;}
+.pain-vs h3{font-size:1.4rem;font-weight:900;color:var(--neon);margin-bottom:8px;}
+.pain-vs p{color:var(--gray);font-size:.9rem;line-height:1.9;}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* SERVICES */
+.svc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.svc-card{background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:28px 22px;transition:all .22s;position:relative;overflow:hidden;}
+.svc-card::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(155,92,255,.08),transparent);opacity:0;transition:.3s;}
+.svc-card:hover{border-color:rgba(155,92,255,.4);transform:translateY(-4px);}
+.svc-card:hover::after{opacity:1;}
+.svc-icon{font-size:1.9rem;margin-bottom:14px;}
+.svc-card h3{font-size:.97rem;font-weight:700;margin-bottom:8px;}
+.svc-card p{font-size:.82rem;color:var(--gray);line-height:1.8;margin-bottom:14px;}
+.svc-tag{display:inline-block;padding:3px 10px;background:rgba(155,92,255,.15);color:var(--purple);border-radius:6px;font-size:.7rem;font-weight:700;letter-spacing:.5px;}
+
+/* PROCESS */
+.process-sec{background:var(--black2);}
+.proc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.proc-item{padding:28px 18px;text-align:center;background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:14px;position:relative;}
+.proc-num{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:1.1rem;font-weight:900;}
+.proc-icon{font-size:1.2rem;}
+.proc-item h4{font-size:.9rem;font-weight:700;margin-bottom:6px;}
+.proc-item p{font-size:.78rem;color:var(--gray);line-height:1.75;}
+.proc-arrow{position:absolute;right:-10px;top:50%;transform:translateY(-50%);color:var(--purple);font-size:1.1rem;z-index:1;}
+
+/* RESULTS */
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.result-card{background:var(--black2);border:1px solid var(--border);border-radius:14px;padding:24px 20px;}
+.result-biz{font-size:.68rem;color:var(--purple);font-weight:700;letter-spacing:1.5px;margin-bottom:10px;}
+.result-card h4{font-size:.9rem;font-weight:700;margin-bottom:8px;}
+.result-card p{font-size:.78rem;color:var(--gray);line-height:1.75;margin-bottom:14px;}
+.result-nums{display:flex;gap:14px;}
+.rn{text-align:center;}
+.rn-v{font-size:1.4rem;font-weight:900;color:var(--neon);}
+.rn-l{font-size:.62rem;color:var(--gray);}
+
+/* PRICING */
+.pricing-sec{background:var(--black2);}
+.plan-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.plan-card{border-radius:16px;padding:30px 24px;border:1px solid var(--border);background:rgba(255,255,255,.02);position:relative;transition:transform .2s;}
+.plan-card:hover{transform:translateY(-4px);}
+.plan-card.hot{background:linear-gradient(135deg,rgba(155,92,255,.18),rgba(193,58,255,.12));border-color:rgba(155,92,255,.5);}
+.plan-hot-badge{position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:var(--neon);color:var(--black);font-size:.65rem;font-weight:900;padding:4px 14px;border-radius:12px;letter-spacing:1px;white-space:nowrap;}
+.plan-name{font-size:.7rem;font-weight:700;letter-spacing:3px;color:var(--purple);margin-bottom:12px;}
+.plan-price{font-size:2.6rem;font-weight:900;margin-bottom:4px;}
+.plan-period{font-size:.78rem;color:var(--gray);margin-bottom:22px;}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:9px;}
+.plan-feats li{font-size:.82rem;display:flex;gap:8px;align-items:flex-start;line-height:1.5;color:rgba(255,255,255,.8);}
+.plan-feats li::before{content:'✓';color:var(--neon);font-weight:700;flex-shrink:0;}
+.plan-btn{display:block;width:100%;margin-top:22px;padding:12px;border-radius:8px;border:none;cursor:pointer;font-family:'Noto Sans KR',sans-serif;font-size:.88rem;font-weight:700;transition:all .2s;text-align:center;text-decoration:none;}
+.plan-card:not(.hot) .plan-btn{background:rgba(155,92,255,.12);color:var(--purple);border:1px solid rgba(155,92,255,.3);}
+.plan-card:not(.hot) .plan-btn:hover{background:var(--purple);color:var(--white);}
+.plan-card.hot .plan-btn{background:var(--purple);color:var(--white);}
+.plan-card.hot .plan-btn:hover{background:var(--purple2);}
+
+/* CTA */
+.cta-sec{padding:120px 24px;text-align:center;position:relative;overflow:hidden;}
+.cta-bg-text{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:18vw;font-weight:900;color:rgba(155,92,255,.04);white-space:nowrap;letter-spacing:4px;pointer-events:none;z-index:0;}
+.cta-inner{position:relative;z-index:1;}
+.cta-sec h2{font-size:clamp(2.4rem,5vw,4rem);font-weight:900;margin-bottom:14px;line-height:1.1;}
+.cta-sec h2 em{font-style:normal;color:var(--purple);}
+.cta-sec p{color:var(--gray);font-size:.97rem;max-width:440px;margin:0 auto 36px;line-height:1.9;}
+
+
+
+
+
+/* QR */
+.qr-sec{margin-top:48px;display:flex;flex-direction:column;align-items:center;gap:12px;}
+.qr-label{font-size:.75rem;color:var(--gray);letter-spacing:1.5px;font-weight:500;}
+.qr-frame{background:var(--black2);border:1.5px solid rgba(155,92,255,.35);border-radius:16px;padding:20px;box-shadow:0 0 40px rgba(155,92,255,.15);}
+.qr-frame img,.qr-frame canvas{display:block;border-radius:6px;}
+.qr-sub{font-size:.72rem;color:rgba(155,92,255,.7);letter-spacing:1px;}
+
+/* FOOTER */
+footer{background:var(--black2);border-top:1px solid var(--border);padding:32px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+.footer-logo{display:flex;align-items:center;gap:10px;}
+.footer-wm{font-size:1.2rem;font-weight:900;letter-spacing:1px;}
+.footer-wm .ai{color:var(--purple);}
+.footer-right{font-size:.75rem;color:var(--gray);}
+
+/* FADE UP */
+.fu{opacity:0;transform:translateY(28px);transition:opacity .65s ease,transform .65s ease;}
+.fu.vis{opacity:1;transform:translateY(0);}
+
+
+/* VIDEO */
+.vid-tabs{display:flex;gap:8px;margin-bottom:28px;flex-wrap:wrap;}
+.vid-tab{padding:8px 20px;border-radius:20px;border:1.5px solid var(--border);background:transparent;color:var(--gray);font-family:'Noto Sans KR',sans-serif;font-size:.82rem;font-weight:600;cursor:pointer;transition:all .18s;}
+.vid-tab:hover{border-color:var(--purple);color:var(--purple);}
+.vid-tab.active{background:var(--purple);border-color:var(--purple);color:white;}
+.vid-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.vid-card{background:var(--black);border:1px solid var(--border);border-radius:14px;overflow:hidden;transition:all .22s;}
+.vid-card:hover{border-color:rgba(155,92,255,.4);transform:translateY(-4px);}
+.vid-card.hidden{display:none;}
+
+
+.vid-info{padding:14px 16px;}
+.vid-tag{font-size:.68rem;font-weight:700;color:var(--purple);letter-spacing:1px;margin-bottom:6px;}
+.vid-title{font-size:.85rem;font-weight:700;margin-bottom:8px;line-height:1.4;}
+.vid-stats{display:flex;gap:10px;flex-wrap:wrap;}
+.vid-stats span{font-size:.7rem;color:var(--gray);}
+.vid-upload-notice{margin-top:28px;padding:20px 24px;background:rgba(155,92,255,.07);border:1px solid rgba(155,92,255,.2);border-radius:12px;display:flex;align-items:flex-start;gap:14px;font-size:.86rem;line-height:1.7;}
+.vid-upload-notice span{font-size:1.4rem;flex-shrink:0;}
+@media(max-width:900px){.vid-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.vid-grid{grid-template-columns:1fr;}}
+
+
+/* PORTFOLIO */
+.pf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;}
+.pf-card{background:var(--black);border:1px solid var(--border);border-radius:16px;overflow:hidden;transition:all .22s;cursor:pointer;}
+.pf-card:hover{border-color:rgba(155,92,255,.45);transform:translateY(-5px);box-shadow:0 12px 32px rgba(155,92,255,.15);}
+.pf-card.hidden{display:none;}
+.pf-thumb{position:relative;height:320px;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.pf-mock{position:relative;z-index:1;}
+.pf-phone{width:100px;background:#111;border-radius:14px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.6);border:2px solid rgba(255,255,255,.1);}
+.pf-screen{height:178px;position:relative;display:flex;flex-direction:column;justify-content:space-between;padding:10px 8px 8px;}
+.pf-overlay{display:flex;flex-direction:column;justify-content:space-between;height:100%;}
+.pf-nail-art{display:flex;gap:3px;justify-content:center;padding:4px 0;}
+.nail{width:14px;height:22px;border-radius:6px 6px 4px 4px;}
+.pf-caption{font-size:.42rem;color:rgba(255,255,255,.9);font-weight:700;background:rgba(0,0,0,.5);padding:3px 6px;border-radius:4px;text-align:center;backdrop-filter:blur(4px);}
+.pf-bar{height:14px;background:#1a1a1a;display:flex;align-items:center;justify-content:flex-end;padding:0 6px;gap:3px;}
+.pf-dot{width:4px;height:4px;border-radius:50%;}
+.pf-dot.r{background:#ff5f56;} .pf-dot.g{background:#28ca41;} .pf-dot.b{background:#ffbd2e;}
+.pf-platform-badge{position:absolute;top:12px;right:12px;background:rgba(0,0,0,.7);color:white;font-size:.65rem;font-weight:700;padding:4px 10px;border-radius:12px;backdrop-filter:blur(4px);border:1px solid rgba(255,255,255,.1);}
+.pf-info{padding:16px;}
+.pf-tag{font-size:.68rem;font-weight:700;color:var(--purple);letter-spacing:1px;margin-bottom:5px;}
+.pf-title{font-size:.88rem;font-weight:700;margin-bottom:10px;line-height:1.4;}
+.pf-stats{display:flex;gap:8px;flex-wrap:wrap;}
+.pf-stat{font-size:.7rem;color:var(--gray);background:rgba(255,255,255,.04);padding:3px 8px;border-radius:6px;border:1px solid var(--border);}
+.pf-stat.up{color:var(--neon);border-color:rgba(0,255,209,.2);}
+@media(max-width:900px){.pf-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:580px){.pf-grid{grid-template-columns:1fr;}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  nav{padding:0 20px;}
+  .nav-links{display:none;}
+  .pain-grid,.svc-grid,.result-grid,.plan-grid,
+  .proc-grid{grid-template-columns:1fr 1fr;}
+  .hero-stats{flex-direction:column;}
+  .hs{border-right:none;border-bottom:1px solid var(--border);}
+  .hs:last-child{border-bottom:none;}
+  footer{padding:24px 20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-icon">
+      <svg viewBox="0 0 20 20" fill="none">
+        <circle cx="10" cy="9" r="5.5" stroke="white" stroke-width="1.8"/>
+        <circle cx="10" cy="9" r="2.5" fill="white"/>
+        <path d="M9 5.5L8 9H10L9 12.5L12.5 8.5H10.5Z" fill="#00FFD1"/>
+      </svg>
+    </div>
+    <div class="nav-wordmark"><span class="ai">Ai</span><span class="shot">Shot</span></div>
+  </a>
+  <div class="nav-links">
+    <a href="#why">왜 AiShot</a>
+    <a href="#services">서비스</a>
+    <a href="#process">진행방식</a>
+    <a href="#pricing">요금제</a>
+    <a href="https://open.kakao.com/o/s4HbjcKi" target="_blank" class="nav-cta">무료 상담 →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow">AiShot × 소상공인 × AI 숏폼</div>
+    <h1 class="hero-h1">
+      <div class="line1">영상 하나가</div>
+      <div class="line2">가게를 바꿉니다</div>
+      <div class="line3">AiShot이 만듭니다</div>
+    </h1>
+    <div class="tw-wrap">
+      <span class="tw-prefix">AiShot은</span>
+      <span id="tw-text"></span>
+      <span class="tw-cur"></span>
+    </div>
+    <p class="hero-desc">
+      틱톡 · 인스타 릴스 · 유튜브쇼츠<br>
+      기획부터 편집 · 업로드까지 전부 맡기세요.<br>
+      사장님은 장사에만 집중하시면 됩니다.
+    </p>
+    <div class="hero-btns">
+      <a href="https://open.kakao.com/o/s4HbjcKi" target="_blank" class="btn-primary">🎬 무료 상담 신청하기</a>
+      <a href="#why" class="btn-outline">어떻게 다른가요?</a>
+    </div>
+    <div class="hero-stats">
+      <div class="hs"><div class="hs-num">10초</div><div class="hs-label">AI 스크립트 생성</div></div>
+      <div class="hs"><div class="hs-num">3개</div><div class="hs-label">플랫폼 동시 납품</div></div>
+      <div class="hs"><div class="hs-num">+340%</div><div class="hs-label">평균 조회수 증가</div></div>
+      <div class="hs"><div class="hs-num">24H</div><div class="hs-label">야간 기획 응답</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="sec pain-sec" id="why">
+  <div class="sec-inner">
+    <div class="sec-eye fu">왜 AiShot인가</div>
+    <h2 class="sec-h2 fu">사장님이 SNS를<br>못 하는 진짜 이유</h2>
+    <p class="sec-desc fu">시간도 없고, 방법도 모르고, 맡기자니 비싸다.<br>AiShot은 그 세 가지를 전부 해결합니다.</p>
+    <div class="pain-grid">
+      <div class="pain-card fu">
+        <div class="pain-emoji">⏰</div>
+        <h3>하루가 모자란 사장님</h3>
+        <p>촬영, 편집, 업로드, 해시태그… SNS만 하다 하루가 끝납니다. 그러면 안 됩니다.</p>
+      </div>
+      <div class="pain-card fu">
+        <div class="pain-emoji">💸</div>
+        <h3>대행사는 너무 비싸다</h3>
+        <p>월 100~300만원짜리 대행사. 소상공인이 감당하기엔 부담이 큽니다.</p>
+      </div>
+      <div class="pain-card fu">
+        <div class="pain-emoji">😵</div>
+        <h3>뭘 올려야 할지 모른다</h3>
+        <p>찍어도 어색하고, 올려도 반응 없고. 뭘 해야 터지는지 아무도 안 알려줍니다.</p>
+      </div>
+    </div>
+    <div class="pain-vs fu">
+      <h3>✅ AiShot이 전부 해결합니다</h3>
+      <p>AI 기획 · 스크립트 · 편집 · 업로드 · 성과 분석까지<br>
+      사장님은 "우리 가게 이름이에요"만 알려주시면 됩니다.</p>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- SERVICES -->
+<section class="sec" id="services">
+  <div class="sec-inner">
+    <div class="sec-eye fu">Services</div>
+    <h2 class="sec-h2 fu">AiShot이 해드리는 것들</h2>
+    <p class="sec-desc fu">기획부터 업로드까지 전 과정. 사장님이 따로 하실 게 없습니다.</p>
+    <div class="svc-grid">
+      <div class="svc-card fu">
+        <div class="svc-icon">🎯</div>
+        <h3>AI 콘텐츠 기획</h3>
+        <p>업종·타겟·트렌드를 AI가 분석해 바이럴 가능성 높은 주제를 먼저 제안합니다.</p>
+        <span class="svc-tag">전 패키지 포함</span>
+      </div>
+      <div class="svc-card fu">
+        <div class="svc-icon">✍️</div>
+        <h3>스크립트 자동 작성</h3>
+        <p>훅-본론-CTA 구조로 첫 3초부터 시청자를 잡는 스크립트를 10초 만에 완성합니다.</p>
+        <span class="svc-tag">전 패키지 포함</span>
+      </div>
+      <div class="svc-card fu">
+        <div class="svc-icon">🎬</div>
+        <h3>촬영 & AI 편집</h3>
+        <p>현장 촬영 또는 기존 소스 활용. AI 편집으로 자막·BGM·효과까지 빠르게 완성.</p>
+        <span class="svc-tag">스탠다드+</span>
+      </div>
+      <div class="svc-card fu">
+        <div class="svc-icon">📤</div>
+        <h3>멀티플랫폼 업로드</h3>
+        <p>틱톡·릴스·쇼츠에 최적 해시태그와 함께 예약 업로드. 사장님 개입 0.</p>
+        <span class="svc-tag">스탠다드+</span>
+      </div>
+      <div class="svc-card fu">
+        <div class="svc-icon">📊</div>
+        <h3>월간 성과 리포트</h3>
+        <p>조회수·팔로워·도달·저장수를 매달 정리해 드립니다. 숫자로 보는 ROI.</p>
+        <span class="svc-tag">스탠다드+</span>
+      </div>
+      <div class="svc-card fu">
+        <div class="svc-icon">🚀</div>
+        <h3>광고 소재 제작</h3>
+        <p>잘 터진 영상을 광고 소재로 전환. 틱톡 광고·인스타 부스팅에 바로 사용.</p>
+        <span class="svc-tag">프리미엄 전용</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROCESS -->
+<section class="sec process-sec" id="process">
+  <div class="sec-inner">
+    <div class="sec-eye fu">How It Works</div>
+    <h2 class="sec-h2 fu">딱 4단계, 끝입니다</h2>
+    <p class="sec-desc fu">복잡한 미팅 없이 카카오 상담 하나로 시작됩니다.</p>
+    <div class="proc-grid">
+      <div class="proc-item fu">
+        <div class="proc-num">01</div>
+        <h4>카카오 무료 상담</h4>
+        <p>업종·목표·예산. 15분이면 맞춤 전략이 나옵니다.</p>
+      </div>
+      <div class="proc-item fu">
+        <div class="proc-num">02</div>
+        <h4>AI 콘텐츠 기획</h4>
+        <p>트렌드 분석 후 기획안 3종 제시. 사장님은 선택만.</p>
+      </div>
+      <div class="proc-item fu">
+        <div class="proc-num">03</div>
+        <h4>제작 & 72H 납품</h4>
+        <p>계약 후 72시간 내 첫 영상. 자막·BGM·효과 포함.</p>
+      </div>
+      <div class="proc-item fu">
+        <div class="proc-num">04</div>
+        <h4>성장 & 반복</h4>
+        <p>성과 분석 → 더 잘 터지는 영상으로 매달 개선.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section class="sec" id="results">
+  <div class="sec-inner">
+    <div class="sec-eye fu">Results</div>
+    <h2 class="sec-h2 fu">숫자로 증명합니다</h2>
+    <p class="sec-desc fu">과장 없이, 실제 결과만 보여드립니다.</p>
+    <div class="result-grid">
+      <div class="result-card fu">
+        <div class="result-biz">💅 네일샵 · 마포구</div>
+        <h4>글로우 네일샵</h4>
+        <p>SNS 전혀 없던 상태에서 시작. 3개월 만에 예약이 2주 전 마감됩니다.</p>
+        <div class="result-nums">
+          <div class="rn"><div class="rn-v">+1.2만</div><div class="rn-l">팔로워</div></div>
+          <div class="rn"><div class="rn-v">+340%</div><div class="rn-l">조회수</div></div>
+          <div class="rn"><div class="rn-v">+60%</div><div class="rn-l">예약</div></div>
+        </div>
+      </div>
+      <div class="result-card fu">
+        <div class="result-biz">☕ 카페 · 홍대</div>
+        <h4>모닝글로리 카페</h4>
+        <p>오픈 초기 정체됐던 유입. 숏폼 1편이 30만뷰를 기록하며 웨이팅 카페로.</p>
+        <div class="result-nums">
+          <div class="rn"><div class="rn-v">30만</div><div class="rn-l">단일 뷰</div></div>
+          <div class="rn"><div class="rn-v">+2.8만</div><div class="rn-l">팔로워</div></div>
+          <div class="rn"><div class="rn-v">웨이팅</div><div class="rn-l">달성</div></div>
+        </div>
+      </div>
+      <div class="result-card fu">
+        <div class="result-biz">💪 헬스장 · 강남</div>
+        <h4>파워짐</h4>
+        <p>PT 모집에 숏폼 활용. 영상 3편으로 신규 PT 12건 계약, 매출 +890만원.</p>
+        <div class="result-nums">
+          <div class="rn"><div class="rn-v">12건</div><div class="rn-l">신규계약</div></div>
+          <div class="rn"><div class="rn-v">+890만</div><div class="rn-l">매출</div></div>
+          <div class="rn"><div class="rn-v">영상 3편</div><div class="rn-l">으로만</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- PORTFOLIO CASES -->
+<section class="sec" id="videos" style="background:var(--black2);">
+  <div class="sec-inner">
+    <div class="sec-eye fu">Portfolio</div>
+    <h2 class="sec-h2 fu">실제 제작 사례</h2>
+    <p class="sec-desc fu">AiShot이 직접 기획·편집·납품한 숏폼 콘텐츠 사례입니다.</p>
+
+    <div class="vid-tabs fu">
+      <button class="vid-tab active" onclick="switchVidTab('all',this)">전체</button>
+      <button class="vid-tab" onclick="switchVidTab('nail',this)">💅 네일샵</button>
+      <button class="vid-tab" onclick="switchVidTab('cafe',this)">☕ 카페</button>
+      <button class="vid-tab" onclick="switchVidTab('gym',this)">💪 헬스장</button>
+      <button class="vid-tab" onclick="switchVidTab('food',this)">🍜 식당</button>
+      <button class="vid-tab" onclick="switchVidTab('daegu',this)">📍 대구·경북</button>
+    </div>
+
+    <div class="pf-grid" id="vidGrid">
+
+      <!-- 네일샵 1 -->
+      <div class="pf-card fu" data-cat="nail">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#1a0a2e,#3d1a6e);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#ff80ab,#ce93d8,#b39ddb);">
+                <div class="pf-overlay">
+                  <div class="pf-nail-art">
+                    <div class="nail" style="background:linear-gradient(135deg,#f8bbd0,#e040fb);"></div>
+                    <div class="nail" style="background:linear-gradient(135deg,#ce93d8,#9c27b0);"></div>
+                    <div class="nail" style="background:linear-gradient(135deg,#b39ddb,#673ab7);"></div>
+                    <div class="nail" style="background:linear-gradient(135deg,#e040fb,#aa00ff);"></div>
+                    <div class="nail" style="background:linear-gradient(135deg,#f8bbd0,#ad1457);"></div>
+                  </div>
+                  <div class="pf-caption">✨ 신상 젤네일 아트</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">📸 인스타그램 릴스</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">💅 네일샵</div>
+          <div class="pf-title">젤네일 신상 컬러 소개 릴스</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 28.4만</span>
+            <span class="pf-stat">❤️ 3,200</span>
+            <span class="pf-stat up">📈 팔로워 +1,200</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 네일샵 2 -->
+      <div class="pf-card fu" data-cat="nail">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#0d0d1a,#1a1a3e);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#fce4ec,#f8bbd0,#ffccbc);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:8px 0;">
+                    <div style="font-size:1.8rem;margin-bottom:4px;">🎀</div>
+                    <div style="font-size:.55rem;color:#880e4f;font-weight:700;letter-spacing:1px;">ASMR NAIL</div>
+                  </div>
+                  <div class="pf-caption">💆 시술 ASMR 영상</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">🎵 틱톡</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">💅 네일샵</div>
+          <div class="pf-title">시술 과정 ASMR 틱톡</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 15.2만</span>
+            <span class="pf-stat">❤️ 1,840</span>
+            <span class="pf-stat up">📈 신규예약 +40%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카페 1 -->
+      <div class="pf-card fu" data-cat="cafe">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#1a1200,#3d2b00);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#4e342e,#795548,#a1887f);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:8px 0;">
+                    <div style="font-size:1.8rem;margin-bottom:4px;">☕</div>
+                    <div style="font-size:.5rem;color:#fff8e1;font-weight:700;letter-spacing:1.5px;">SIGNATURE LATTE</div>
+                    <div style="width:36px;height:2px;background:#ffcc02;margin:4px auto;border-radius:1px;"></div>
+                  </div>
+                  <div class="pf-caption">☕ 시그니처 라떼 제조</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">▶ 유튜브쇼츠</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">☕ 카페</div>
+          <div class="pf-title">시그니처 음료 제조 과정 쇼츠</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 30.1만</span>
+            <span class="pf-stat">❤️ 5,600</span>
+            <span class="pf-stat up">📈 웨이팅 달성</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 카페 2 -->
+      <div class="pf-card fu" data-cat="cafe">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#0a1628,#1a2744);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#e8eaf6,#c5cae9,#9fa8da);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:6px 0;">
+                    <div style="font-size:1.6rem;margin-bottom:4px;">🌿</div>
+                    <div style="font-size:.48rem;color:#1a237e;font-weight:700;letter-spacing:1px;">CAFE VLOG</div>
+                    <div style="font-size:.42rem;color:#3949ab;margin-top:2px;">감성 하루 일상</div>
+                  </div>
+                  <div class="pf-caption">🌿 감성 카페 브이로그</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">📸 인스타그램 릴스</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">☕ 카페</div>
+          <div class="pf-title">감성 카페 하루 브이로그</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 8.7만</span>
+            <span class="pf-stat">❤️ 2,100</span>
+            <span class="pf-stat up">📈 팔로워 +2,800</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 헬스장 1 -->
+      <div class="pf-card fu" data-cat="gym">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#0a0a0f,#1a1a28);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#212121,#424242,#616161);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:6px 0;">
+                    <div style="font-size:1.6rem;margin-bottom:4px;">💪</div>
+                    <div style="font-size:.48rem;color:#ff6f00;font-weight:900;letter-spacing:2px;">TRAINER ROUTINE</div>
+                    <div style="width:36px;height:2px;background:#ff6f00;margin:4px auto;"></div>
+                    <div style="font-size:.4rem;color:#bdbdbd;margin-top:2px;">POWER GYM</div>
+                  </div>
+                  <div class="pf-caption">🔥 트레이너 루틴 공개</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">🎵 틱톡</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">💪 헬스장</div>
+          <div class="pf-title">PT 트레이너 루틴 공개 틱톡</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 22.5만</span>
+            <span class="pf-stat">❤️ 4,300</span>
+            <span class="pf-stat up">📈 PT 신규 12건</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 식당 -->
+      <div class="pf-card fu" data-cat="food">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#1a0800,#3d1c00);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#bf360c,#e64a19,#ff7043);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:6px 0;">
+                    <div style="font-size:1.6rem;margin-bottom:4px;">🍜</div>
+                    <div style="font-size:.48rem;color:#fff8e1;font-weight:700;letter-spacing:1px;">SECRET RECIPE</div>
+                    <div style="font-size:.42rem;color:#ffccbc;margin-top:2px;">수제 국물 레시피 공개</div>
+                  </div>
+                  <div class="pf-caption">🍜 시크릿 레시피 공개</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">▶ 유튜브쇼츠</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">🍜 식당</div>
+          <div class="pf-title">수제 국물 시크릿 레시피 쇼츠</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 41.3만</span>
+            <span class="pf-stat">❤️ 8,900</span>
+            <span class="pf-stat up">📈 매출 +55%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+      <!-- 대구 네일샵 -->
+      <div class="pf-card fu" data-cat="daegu">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#1a0a2e,#2d1b4e);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#4a148c,#7b1fa2,#ab47bc);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:8px 0;">
+                    <div style="font-size:1.6rem;margin-bottom:4px;">💅</div>
+                    <div style="font-size:.48rem;color:#f3e5f5;font-weight:700;letter-spacing:1px;">DAEGU NAIL</div>
+                    <div style="font-size:.4rem;color:#ce93d8;margin-top:2px;">동성로 프리미엄 네일샵</div>
+                  </div>
+                  <div class="pf-caption">✨ 동성로 신상 아트</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">📸 인스타그램 릴스</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">💅 네일샵 · 대구 동성로</div>
+          <div class="pf-title">프리미엄 젤네일 신상 아트 릴스</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 19.3만</span>
+            <span class="pf-stat">❤️ 2,840</span>
+            <span class="pf-stat up">📈 예약 +65%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 대구 카페 -->
+      <div class="pf-card fu" data-cat="daegu">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#0d1b2a,#1b2838);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#1a237e,#283593,#3949ab);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:6px 0;">
+                    <div style="font-size:1.6rem;margin-bottom:4px;">☕</div>
+                    <div style="font-size:.48rem;color:#e8eaf6;font-weight:700;letter-spacing:1px;">SUSEONG CAFE</div>
+                    <div style="width:30px;height:2px;background:#00FFD1;margin:4px auto;border-radius:1px;"></div>
+                    <div style="font-size:.4rem;color:#9fa8da;margin-top:2px;">수성못 감성 카페</div>
+                  </div>
+                  <div class="pf-caption">🌊 수성못 뷰 카페</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">🎵 틱톡</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">☕ 카페 · 대구 수성못</div>
+          <div class="pf-title">수성못 뷰 감성 카페 브이로그</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 33.7만</span>
+            <span class="pf-stat">❤️ 6,200</span>
+            <span class="pf-stat up">📈 팔로워 +3,400</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 경북 식당 -->
+      <div class="pf-card fu" data-cat="daegu">
+        <div class="pf-thumb" style="background:linear-gradient(135deg,#1a0a00,#2d1500);">
+          <div class="pf-mock">
+            <div class="pf-phone">
+              <div class="pf-screen" style="background:linear-gradient(180deg,#e65100,#f57c00,#ff9800);">
+                <div class="pf-overlay">
+                  <div style="text-align:center;padding:6px 0;">
+                    <div style="font-size:1.6rem;margin-bottom:4px;">🍖</div>
+                    <div style="font-size:.48rem;color:#fff8e1;font-weight:700;letter-spacing:1px;">GYEONGBUK GALBI</div>
+                    <div style="font-size:.4rem;color:#ffe0b2;margin-top:2px;">안동 한우 갈비 전문</div>
+                  </div>
+                  <div class="pf-caption">🔥 안동 한우 갈비</div>
+                </div>
+              </div>
+              <div class="pf-bar">
+                <div class="pf-dot r"></div><div class="pf-dot g"></div><div class="pf-dot b"></div>
+              </div>
+            </div>
+          </div>
+          <div class="pf-platform-badge">▶ 유튜브쇼츠</div>
+        </div>
+        <div class="pf-info">
+          <div class="pf-tag">🍖 식당 · 경북 안동</div>
+          <div class="pf-title">안동 한우 갈비 시크릿 레시피 쇼츠</div>
+          <div class="pf-stats">
+            <span class="pf-stat up">👁 52.1만</span>
+            <span class="pf-stat">❤️ 11,400</span>
+            <span class="pf-stat up">📈 매출 +78%</span>
+          </div>
+        </div>
+      </div>
+
+    <div class="vid-upload-notice fu">
+      <span>🎬</span>
+      <div>
+        <strong>실제 클라이언트 영상·이미지를 등록하시면 여기에 바로 표시됩니다.</strong><br>
+        <span style="color:var(--gray);font-size:.8rem;">카카오 오픈채팅으로 보내주시면 즉시 업데이트해드립니다.</span>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="sec pricing-sec" id="pricing">
+  <div class="sec-inner">
+    <div class="sec-eye fu">Pricing</div>
+    <h2 class="sec-h2 fu">투명한 요금제</h2>
+    <p class="sec-desc fu">숨은 비용 없음. 언제든 해지 가능. 첫 2주 무료 체험.</p>
+    <div class="plan-grid">
+      <div class="plan-card fu">
+        <div class="plan-name">STARTER</div>
+        <div class="plan-price">50만원</div>
+        <div class="plan-period">/ 월</div>
+        <ul class="plan-feats">
+          <li>주 2편 제작</li>
+          <li>1개 플랫폼 업로드</li>
+          <li>AI 스크립트 포함</li>
+          <li>자막 · BGM 포함</li>
+          <li>월간 성과 요약</li>
+        </ul>
+        <a href="https://open.kakao.com/o/s4HbjcKi" target="_blank" class="plan-btn">시작하기</a>
+      </div>
+      <div class="plan-card hot fu">
+        <div class="plan-hot-badge">⭐ 가장 인기</div>
+        <div class="plan-name">STANDARD</div>
+        <div class="plan-price">80만원</div>
+        <div class="plan-period">/ 월</div>
+        <ul class="plan-feats">
+          <li>주 3편 제작</li>
+          <li>3개 플랫폼 동시 업로드</li>
+          <li>AI 기획 + 스크립트</li>
+          <li>해시태그 최적화</li>
+          <li>월간 성과 리포트</li>
+          <li>전담 매니저 배정</li>
+        </ul>
+        <a href="https://open.kakao.com/o/s4HbjcKi" target="_blank" class="plan-btn">지금 시작하기</a>
+      </div>
+      <div class="plan-card fu">
+        <div class="plan-name">PREMIUM</div>
+        <div class="plan-price">120만원</div>
+        <div class="plan-period">/ 월</div>
+        <ul class="plan-feats">
+          <li>주 5편 제작</li>
+          <li>전 플랫폼 + 광고 소재</li>
+          <li>현장 촬영 월 2회</li>
+          <li>브랜드 맞춤 스타일</li>
+          <li>주간 성과 리포트</li>
+          <li>전담 PD 배정</li>
+        </ul>
+        <a href="https://open.kakao.com/o/s4HbjcKi" target="_blank" class="plan-btn">문의하기</a>
+      </div>
+    </div>
+    <div style="margin-top:20px;padding:20px 24px;background:rgba(0,255,209,.06);border:1px solid rgba(0,255,209,.2);border-radius:10px;display:flex;align-items:center;gap:14px;" class="fu">
+      <span style="font-size:1.3rem;">💡</span>
+      <div style="font-size:.84rem;color:rgba(255,255,255,.7);line-height:1.75;">
+        <strong style="color:var(--neon);">첫 2주 무료 체험</strong> — 실제 영상을 먼저 받아보시고, 마음에 드실 때만 계약하세요.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-sec" id="contact">
+  <div class="cta-bg-text">AiShot</div>
+  <div class="cta-inner">
+    <div class="sec-eye fu" style="justify-content:center;margin-bottom:16px;">무료 상담</div>
+    <h2 class="fu">지금 바로 <em>터뜨려</em> 드릴게요</h2>
+    <p class="fu">15분 카카오 상담으로 전략이 나옵니다.<br>신용카드도, 계약서도 나중에.</p>
+    <a href="https://open.kakao.com/o/s4HbjcKi" target="_blank" class="btn-primary fu" style="font-size:1rem;padding:17px 44px;margin:0 auto;display:inline-flex;">🚀 무료 상담 신청하기</a>
+    
+    <!-- QR -->
+    <div class="qr-sec fu">
+      <div class="qr-label">📲 QR 스캔하면 바로 카카오 상담</div>
+      <div class="qr-frame" id="qrFrame"></div>
+      <div class="qr-sub">AiShot 카카오 오픈채팅 무료 상담</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">
+    <div style="width:28px;height:28px;border-radius:6px;background:linear-gradient(135deg,var(--purple),var(--purple2));display:flex;align-items:center;justify-content:center;">
+      <svg viewBox="0 0 20 20" width="14" height="14" fill="none">
+        <circle cx="10" cy="9" r="5.5" stroke="white" stroke-width="1.8"/>
+        <circle cx="10" cy="9" r="2.5" fill="white"/>
+        <path d="M9 5.5L8 9H10L9 12.5L12.5 8.5H10.5Z" fill="#00FFD1"/>
+      </svg>
+    </div>
+    <div class="footer-wm"><span class="ai">Ai</span><span class="shot">Shot</span></div>
+  </div>
+  <div class="footer-right">© 2026 AiShot. AI 숏폼 대행 에이전시. All rights reserved.</div>
+</footer>
+
+<!-- QR LIB -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">
+/* VIDEO TABS */
+function switchVidTab(cat, btn) {
+  document.querySelectorAll('.vid-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.vid-card').forEach(card => {
+    if (cat === 'all' || card.dataset.cat === cat) {
+      card.classList.remove('hidden');
+    } else {
+      card.classList.add('hidden');
+    }
+  });
+}
+
+</script>
+<script>
+/* TYPEWRITER */
+const words = ['기획합니다','편집합니다','올려드립니다','성장시킵니다'];
+let wi=0,ci=0,del=false;
+const twEl=document.getElementById('tw-text');
+function type(){
+  const w=words[wi];
+  if(!del){twEl.textContent=w.slice(0,++ci);if(ci===w.length){del=true;setTimeout(type,1800);return;}}
+  else{twEl.textContent=w.slice(0,--ci);if(ci===0){del=false;wi=(wi+1)%words.length;}}
+  setTimeout(type,del?55:90);
+}
+type();
+
+/* SCROLL REVEAL */
+const obs=new IntersectionObserver(e=>{e.forEach(x=>{if(x.isIntersecting)x.target.classList.add('vis');});},{threshold:0.1});
+document.querySelectorAll('.fu').forEach(el=>obs.observe(el));
+
+/* QR - 다크 배경에 맞게 */
+window.addEventListener('load',function(){
+  const frame=document.getElementById('qrFrame');
+  if(!frame)return;
+  new QRCode(frame,{
+    text:'https://open.kakao.com/o/s4HbjcKi',
+    width:160,height:160,
+    colorDark:'#1A0A2E',
+    colorLight:'#ffffff',
+    correctLevel:QRCode.CorrectLevel.H
+  });
+});
+</script>
+</body>
+</html>
