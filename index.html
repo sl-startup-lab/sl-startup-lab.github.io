@@ -5,25 +5,154 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SL Startup Lab</title>
   <style>
+    :root {
+      --bg: #f7f7f5;
+      --card: #ffffff;
+      --text: #222;
+      --muted: #6b6b6b;
+      --border: #e4e4e0;
+      --accent: #3b6fe0;
+      --badge-bg: #eef0f4;
+    }
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #16171a;
+        --card: #1f2125;
+        --text: #ececec;
+        --muted: #9a9a9a;
+        --border: #2e3036;
+        --accent: #7aa2ff;
+        --badge-bg: #2a2d33;
+      }
+    }
+    * { box-sizing: border-box; }
     body {
       margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-family: -apple-system, "Segoe UI", "Noto Sans KR", sans-serif;
-      background: #f7f7f5;
-      color: #222;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    header {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 56px 16px 24px;
       text-align: center;
     }
-    h1 { font-size: 2.5rem; margin: 0 0 0.5rem; }
-    p { color: #666; margin: 0; }
+    h1 { font-size: 2.25rem; margin: 0 0 0.5rem; }
+    header p { color: var(--muted); margin: 0; }
+    main {
+      max-width: 960px;
+      margin: 0 auto;
+      padding: 16px 16px 64px;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .card {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      height: 100%;
+      padding: 24px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      color: inherit;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    a.card:hover {
+      transform: translateY(-3px);
+      border-color: var(--accent);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    }
+    .card.disabled { cursor: not-allowed; }
+    .num { font-size: 0.85rem; color: var(--muted); font-weight: 600; }
+    .card h2 { font-size: 1.2rem; margin: 0; }
+    .card p { margin: 0; color: var(--muted); font-size: 0.95rem; flex: 1; }
+    .badge {
+      align-self: flex-start;
+      margin-top: 8px;
+      padding: 2px 10px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+      background: var(--badge-bg);
+      color: var(--muted);
+    }
+    footer { text-align: center; color: var(--muted); font-size: 0.85rem; padding-bottom: 32px; }
   </style>
 </head>
 <body>
-  <main>
+  <header>
     <h1>SL Startup Lab</h1>
-    <p>안녕하세요! 곧 멋진 페이지로 찾아오겠습니다.</p>
+    <p>실습 자료 모음</p>
+  </header>
+
+  <main>
+    <!--
+      링크 연결 방법: 프로젝트가 준비되면 해당 카드의
+      <div class="card disabled" aria-disabled="true"> 를
+      <a class="card" href="https://프로젝트-주소"> 로 바꾸고 (닫는 태그도 </a> 로)
+      "준비 중" 배지를 "바로가기" 로 바꾸면 됩니다.
+    -->
+    <ul class="grid">
+      <li>
+        <div class="card disabled" aria-disabled="true">
+          <span class="num">01</span>
+          <h2>할일 목록 리스트</h2>
+          <p>할 일을 추가하고 완료 표시하는 To-Do 앱</p>
+          <span class="badge">준비 중</span>
+        </div>
+      </li>
+      <li>
+        <div class="card disabled" aria-disabled="true">
+          <span class="num">02</span>
+          <h2>타이머</h2>
+          <p>시간을 설정하고 카운트다운하는 타이머</p>
+          <span class="badge">준비 중</span>
+        </div>
+      </li>
+      <li>
+        <div class="card disabled" aria-disabled="true">
+          <span class="num">03</span>
+          <h2>다이어트앱</h2>
+          <p>식단과 체중을 기록하는 다이어트 도우미</p>
+          <span class="badge">준비 중</span>
+        </div>
+      </li>
+      <li>
+        <div class="card disabled" aria-disabled="true">
+          <span class="num">04</span>
+          <h2>창업나침반</h2>
+          <p>창업 아이디어와 방향을 잡아 주는 도구</p>
+          <span class="badge">준비 중</span>
+        </div>
+      </li>
+      <li>
+        <div class="card disabled" aria-disabled="true">
+          <span class="num">05</span>
+          <h2>아이템랩</h2>
+          <p>사업 아이템을 정리하고 검토하는 실습</p>
+          <span class="badge">준비 중</span>
+        </div>
+      </li>
+      <li>
+        <div class="card disabled" aria-disabled="true">
+          <span class="num">06</span>
+          <h2>새 프로젝트</h2>
+          <p>다음 실습 자료가 들어갈 자리</p>
+          <span class="badge">준비 중</span>
+        </div>
+      </li>
+    </ul>
   </main>
+
+  <footer>© SL Startup Lab</footer>
 </body>
 </html>
